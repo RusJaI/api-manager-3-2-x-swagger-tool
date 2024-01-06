@@ -1,0 +1,11 @@
+[carbon_server]
+hostname = "localhost"
+#offset=0
+
+[truststore]
+absolute_path =  "wso2carbon.jks"
+password = "h2"
+
+[carbon_user]
+username = "admin"
+password = "admin"
