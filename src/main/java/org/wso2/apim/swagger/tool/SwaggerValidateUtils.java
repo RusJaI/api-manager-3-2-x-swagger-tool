@@ -36,8 +36,8 @@ public class SwaggerValidateUtils {
 
         if (swaggerTypeAndName.size() == 1) { //something went wrong while parsing OAS definition
 
-            fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "", "Error occurred while parsing OAS definition."
-                    + swaggerTypeAndName.get(0).toString()));
+            writeResults(fileWriter, null, null, null,
+                    "Error occurred while parsing OAS definition. " + swaggerTypeAndName.get(0).toString());
 
             totalMalformedSwaggerFiles++;
 
@@ -50,8 +50,8 @@ public class SwaggerValidateUtils {
                 log.error("Invalid OpenAPI : Error: " + Constants.OPENAPI_NAME_NOT_FOUND_ERROR_CODE);
 
                 // writing API entry to report
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "", "Invalid OpenAPI :  Error: " +
-                        Constants.OPENAPI_NAME_NOT_FOUND_ERROR_CODE));
+                writeResults(fileWriter, null, null, null, "Invalid OpenAPI :  Error: "
+                        + Constants.OPENAPI_NAME_NOT_FOUND_ERROR_CODE);
                 totalMalformedSwaggerFiles++;
                 return;
 
@@ -60,9 +60,9 @@ public class SwaggerValidateUtils {
                         " , Error: " + Constants.OPENAPI_VERSION_NOT_FOUND_ERROR_CODE);
 
                 // writing API entry to report
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "", "Invalid OpenAPI : " +
+                writeResults(fileWriter, null, null, null, "Invalid OpenAPI : " +
                         swaggerTypeAndName.get(1).toString() + " , Error: " +
-                        Constants.OPENAPI_VERSION_NOT_FOUND_ERROR_CODE));
+                        Constants.OPENAPI_VERSION_NOT_FOUND_ERROR_CODE);
                 totalMalformedSwaggerFiles++;
                 return;
             }
@@ -79,10 +79,8 @@ public class SwaggerValidateUtils {
         } else if (swaggerTypeAndName.get(0).equals(Constants.SwaggerVersion.OPEN_API)) {
             log.info("---------------- Parsing Started openApiName \"" + swaggerTypeAndName.get(1).toString() +
                     "\" ----------------");
-            boolean isOpenAPIMissing = swagger3Validator(swaggerFileContent, fileWriter);
-            if (isOpenAPIMissing) {
-                swagger2Validator(swaggerFileContent, fileWriter);
-            }
+            swagger3Validator(swaggerFileContent, fileWriter);
+
             log.info("---------------- Parsing Complete openApiName \"" + swaggerTypeAndName.get(1).toString() +
                     "\" ----------------\n");
         }
@@ -145,8 +143,8 @@ public class SwaggerValidateUtils {
         return null;
     }
 
-    public static boolean swagger2Validator(String swagger, FileWriter fileWriter) throws IOException {
-        boolean isSwaggerMissing = false;
+    public static void swagger2Validator(String swagger, FileWriter fileWriter) throws IOException {
+
         SwaggerParser parser = new SwaggerParser();
         SwaggerDeserializationResult parseAttemptForV2 = parser.readWithInfo(swagger);
 
@@ -154,19 +152,17 @@ public class SwaggerValidateUtils {
 
             for (String message : parseAttemptForV2.getMessages()) {
                 StringBuilder errorMessageBuilder = new StringBuilder("Invalid Swagger, Error Code: ");
-                if (message.contains(Constants.SWAGGER_IS_MISSING_MSG)) {
-                    isSwaggerMissing = true;
-                } else {
-                    // Since OpenAPIParser coverts the $ref to #/components/schemas/ when validating
-                    // we need to replace #/components/schemas/ with #/definitions/ before printing the message
-                    if (message.contains(Constants.SCHEMA_REF_PATH)) {
-                        message = message.replace(Constants.SCHEMA_REF_PATH, "#/definitions/");
-                    }
+
+                // Since OpenAPIParser coverts the $ref to #/components/schemas/ when validating
+                // we need to replace #/components/schemas/ with #/definitions/ before printing the message
+                if (message.contains(Constants.SCHEMA_REF_PATH)) {
+                    message = message.replace(Constants.SCHEMA_REF_PATH, "#/definitions/");
                 }
+
                 errorMessageBuilder.append(", Error: ").append(message);
 
                 // write to file
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "", message));
+                writeResults(fileWriter, null, null, null, message);
 
                 log.error(errorMessageBuilder.toString());
             }
@@ -174,36 +170,32 @@ public class SwaggerValidateUtils {
 
             if (parseAttemptForV2.getSwagger() != null) {
                 log.info("Swagger parsed with errors, using may lead to functionality issues.");
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "",
-                        "Swagger parsed with errors, using may lead to functionality issues"));
+                writeResults(fileWriter, null, null, null,
+                        "Swagger parsed with errors, using may lead to functionality issues");
                 totalPartiallyParsedSwaggerFiles++;
             } else {
                 log.error("Malformed Swagger, Please fix the listed issues before proceeding");
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "",
-                        "Malformed Swagger, Please fix the listed issues before proceeding"));
-
+                writeResults(fileWriter, null, null, null,
+                        "Malformed Swagger, Please fix the listed issues before proceeding");
                 totalMalformedSwaggerFiles++;
             }
         } else {
             if (parseAttemptForV2.getSwagger() != null) {
                 log.info("Swagger file is valid");
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "",
-                        "Swagger file is valid"));
+                writeResults(fileWriter, null, null, null, "Swagger file is valid");
 
                 validationSuccessFileCount++;
             } else {
                 log.error(Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "",
-                        Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR));
+                writeResults(fileWriter, null, null, null,
+                        Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
 
                 validationFailedFileCount++;
             }
         }
-        return isSwaggerMissing;
     }
 
-    public static boolean swagger3Validator(String swagger, FileWriter fileWriter) throws IOException {
-        boolean isOpenAPIMissing = false;
+    public static void swagger3Validator(String swagger, FileWriter fileWriter) throws IOException {
 
         OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
         ParseOptions options = new ParseOptions();
@@ -217,61 +209,55 @@ public class SwaggerValidateUtils {
                 StringBuilder errorMessageBuilder = new StringBuilder("Invalid OpenAPI, Error Code: ");
                 errorMessageBuilder.append(", Error: ").append(message);
 
-                if (message.contains(Constants.OPENAPI_IS_MISSING_MSG)) {
-                    isOpenAPIMissing = true;
-                } else {
-                    // If the error message contains "schema is unexpected", we modify the error message notifying
-                    // that the schema object is not adhering to the OpenAPI Specification. Also, we add a note to
-                    // verify the reference object is of the format $ref: '#/components/schemas/{schemaName}'
-                    if (message.contains("schema is unexpected")) {
-                        message = message.concat(". Please verify whether the schema object is adhering to " +
-                                "the OpenAPI Specification. Make sure that the reference object is of " +
-                                "format $ref: '#/components/schemas/{schemaName}'");
-                    }
-                    errorMessageBuilder.append(", Error: ").append(Constants.OPENAPI_PARSE_EXCEPTION_ERROR_MESSAGE)
-                            .append(", Swagger Error: ").append(message);
+                // If the error message contains "schema is unexpected", we modify the error message notifying
+                // that the schema object is not adhering to the OpenAPI Specification. Also, we add a note to
+                // verify the reference object is of the format $ref: '#/components/schemas/{schemaName}'
+                if (message.contains("schema is unexpected")) {
+                    message = message.concat(". Please verify whether the schema object is adhering to " +
+                            "the OpenAPI Specification. Make sure that the reference object is of " +
+                            "format $ref: '#/components/schemas/{schemaName}'");
                 }
+                errorMessageBuilder.append(", Error: ").append(Constants.OPENAPI_PARSE_EXCEPTION_ERROR_MESSAGE)
+                        .append(", Swagger Error: ").append(message);
 
                 // write to file
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "", message));
+                writeResults(fileWriter, null, null, null, message);
 
                 log.error(errorMessageBuilder.toString());
             }
 
-            if (!isOpenAPIMissing) {
-                if (parseResult.getOpenAPI() != null) {
-                    log.info("OpenAPI parsed with errors, using may lead to functionality issues.");
-                    fileWriter.append(String.format("%-20s %-20s %-20s%n", "", "", "",
-                            "OpenAPI parsed with errors, using may lead to functionality issues"));
 
-                    totalPartiallyParsedSwaggerFiles++;
-                } else {
-                    log.error("Malformed OpenAPI, Please fix the listed issues before proceeding");
-                    fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "",
-                            "Malformed OpenAPI, Please fix the listed issues before proceeding"));
+            if (parseResult.getOpenAPI() != null) {
+                log.info("OpenAPI parsed with errors, using may lead to functionality issues.");
+                writeResults(fileWriter, null, null, null,
+                        "OpenAPI parsed with errors, using may lead to functionality issues");
 
-                    ++totalMalformedSwaggerFiles;
-                }
+                totalPartiallyParsedSwaggerFiles++;
+            } else {
+                log.error("Malformed OpenAPI, Please fix the listed issues before proceeding");
+                writeResults(fileWriter, null, null, null,
+                        "Malformed OpenAPI, Please fix the listed issues before proceeding");
 
-                validationFailedFileCount++;
-
+                ++totalMalformedSwaggerFiles;
             }
+
+            validationFailedFileCount++;
+
         } else {
             if (parseResult.getOpenAPI() != null) {
                 log.info("Swagger file is valid OpenAPI 3 definition");
-                fileWriter.append(String.format("%-20s %-20s %-20s%n", "", "", "",
-                        "Swagger file is valid OpenAPI 3 definition"));
+                writeResults(fileWriter, null, null, null,
+                        "Swagger file is valid OpenAPI 3 definition");
 
                 validationSuccessFileCount++;
             } else {
                 log.error(Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
-                fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "", "", "",
-                        Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR));
+                writeResults(fileWriter, null, null, null,
+                        Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
 
                 validationFailedFileCount++;
             }
         }
-        return isOpenAPIMissing;
     }
 
     static void writeStatsSummary (FileWriter fileWriter) throws IOException {
@@ -281,7 +267,7 @@ public class SwaggerValidateUtils {
                 "\nTotal Successful Files Count " + validationSuccessFileCount +
                 "\nTotal Failed Files Count: " + validationFailedFileCount +
                 "\nTotal Malformed Swagger File Count: " + totalMalformedSwaggerFiles +
-                "\n");
+                "\n\n");
 
 
         log.info("Summary --- Total Files Processed: " + totalFileCount + ". Total Successful Files Count "
@@ -289,6 +275,13 @@ public class SwaggerValidateUtils {
                 "Total Malformed Swagger File Count: " + totalMalformedSwaggerFiles);
 
         fileWriter.close();
+
+    }
+
+    protected static void writeResults(FileWriter fileWriter, String provider, String apiName,
+                                     String apiVersion, String results) throws IOException {
+        fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", provider == null ? "" : provider,
+                apiName == null ? "" : apiName, apiVersion == null ? "" : apiVersion, results == null ? "" : results));
 
     }
 

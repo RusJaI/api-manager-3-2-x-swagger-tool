@@ -1,11 +1,10 @@
 [carbon_server]
+baseurl = "https://localhost:9443"
 hostname = "localhost"
-#offset=0
-
-[truststore]
-absolute_path =  "wso2carbon.jks"
-password = "h2"
-
-[carbon_user]
 username = "admin"
 password = "admin"
+
+[truststore]
+absolute_path =  "/Users/rusirijayodaillesinghe/Documents/APIM_Repos/api-manager-3-2-x-swagger-tool/src/main/resources/security/client-truststore.jks"
+password = "wso2carbon"
+

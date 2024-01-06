@@ -40,7 +40,8 @@ public class ResourceAdminServiceAdminClient {
             throw new RuntimeException(e);
         }
 
-        fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", "Provider", "API Name", "Version", "Results"));
+        SwaggerValidateUtils.writeResults(fileWriter, "Provider", "API Name", "Version",
+                "Results");
 
         String [] providers = resourceAdminServiceStub.getCollectionContent(resourcePath).getChildPaths();
         for (String provider : providers) {
@@ -54,10 +55,10 @@ public class ResourceAdminServiceAdminClient {
                     String swaggerJson = resourceAdminServiceStub.getTextContent(version +
                             "/swagger.json").toString();
 
-                    fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n",
+                    SwaggerValidateUtils.writeResults(fileWriter,
                             provider.substring(resourcePath.length() + 1),
                             apiName.substring(provider.length() + 1),
-                            version.substring(apiName.length() + 1), ""));
+                            version.substring(apiName.length() + 1), null);
 
                     SwaggerValidateUtils.validateSwaggerContent(swaggerJson, fileWriter);
                 }

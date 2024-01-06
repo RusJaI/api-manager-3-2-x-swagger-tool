@@ -21,11 +21,11 @@ public class LoginAdminServiceClient {
         authenticationAdminStub = new AuthenticationAdminStub(endPoint);
     }
 
-    public String authenticate(String userName, String password) throws RemoteException,
+    public String authenticate(String hostName, String userName, String password) throws RemoteException,
             LoginAuthenticationExceptionException {
         String sessionCookie = null;
 
-        if (authenticationAdminStub.login(userName, password, "localhost")) {
+        if (authenticationAdminStub.login(userName, password, hostName)) {
             log.info("Login Successful");
 
             ServiceContext serviceContext = authenticationAdminStub.

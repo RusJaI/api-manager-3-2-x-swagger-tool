@@ -7,20 +7,21 @@ import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionExcep
 import java.io.IOException;
 
 public class AdminServiceClientManager {
-    public static void invokeAdminServiceClient() throws IOException, LoginAuthenticationExceptionException, ResourceAdminServiceExceptionException, LogoutAuthenticationExceptionException {
+    public static void invokeAdminServiceClient(String backendUrl, String userName, String password, String hostName,
+                                                String trustStorePath, String trustStorePassword)
+            throws IOException, LoginAuthenticationExceptionException, ResourceAdminServiceExceptionException,
+            LogoutAuthenticationExceptionException {
 
-        System.setProperty("javax.net.ssl.trustStore",
-                "/Users/rusirijayodaillesinghe/Documents/APIM_Repos/api-manager-3-2-x-swagger-tool" +
-                        "/src/main/resources/security/client-truststore.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "wso2carbon");
+        System.setProperty("javax.net.ssl.trustStore", trustStorePath);
+        System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
 
 
         LoginAdminServiceClient loginAdminServiceClient =
-                new LoginAdminServiceClient("https://localhost:9443");
-        String sessionId = loginAdminServiceClient.authenticate("admin", "admin");
+                new LoginAdminServiceClient(backendUrl);
+        String sessionId = loginAdminServiceClient.authenticate(hostName, userName, password);
 
         ResourceAdminServiceAdminClient resourceAdminServiceAdminClient = new
-                ResourceAdminServiceAdminClient("https://localhost:9443", sessionId);
+                ResourceAdminServiceAdminClient(backendUrl, sessionId);
 
         resourceAdminServiceAdminClient.validateCollectionContent();
 
