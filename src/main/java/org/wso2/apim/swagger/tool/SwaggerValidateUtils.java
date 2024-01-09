@@ -35,6 +35,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class contains the set of functions for validating swagger files
+ */
 public class SwaggerValidateUtils {
     private static final Logger log = LoggerFactory.getLogger(SwaggerTool.class);
     static int totalFileCount = 0;
@@ -105,13 +108,19 @@ public class SwaggerValidateUtils {
 
     }
 
+    /**
+     *This method is used to get the swagger type and name from the swagger file
+     * @param apiDefinition of type String
+     * @return List containing swagger type and name
+     * Following value combinations can be returned by the list :
+     *  size =1 -> parse error
+     *  size =2 -> parse success with following possibilities
+     *           a) correct type and name
+     *           b) error and name!=null
+     *           c) error and name=null
+     * Note : empty info block is captured when validating the swagger
+     */
     public static List<Object> getSwaggerVersion(String apiDefinition) {
-        // size =1 -> parse error
-        // size =2 -> parse success with following possibilities
-        // a) correct type and name
-        // b) error and name!=null
-        // c) error and name=null
-        // empty info block is captured when validating
 
         List<Object> swaggerTypeAndName = new ArrayList<>();
         ObjectMapper mapper;
@@ -171,12 +180,6 @@ public class SwaggerValidateUtils {
             for (String message : parseAttemptForV2.getMessages()) {
                 StringBuilder errorMessageBuilder = new StringBuilder("Invalid Swagger");
 
-                // Since OpenAPIParser coverts the $ref to #/components/schemas/ when validating
-                // we need to replace #/components/schemas/ with #/definitions/ before printing the message
-                if (message.contains(Constants.SCHEMA_REF_PATH)) {
-                    message = message.replace(Constants.SCHEMA_REF_PATH, "#/definitions/");
-                }
-
                 errorMessageBuilder.append(", Error: ").append(message);
 
                 // write to file
@@ -226,14 +229,6 @@ public class SwaggerValidateUtils {
 
                 StringBuilder errorMessageBuilder = new StringBuilder("Invalid OpenAPI");
 
-                // If the error message contains "schema is unexpected", we modify the error message notifying
-                // that the schema object is not adhering to the OpenAPI Specification. Also, we add a note to
-                // verify the reference object is of the format $ref: '#/components/schemas/{schemaName}'
-                if (message.contains("schema is unexpected")) {
-                    message = message.concat(". Please verify whether the schema object is adhering to " +
-                            "the OpenAPI Specification. Make sure that the reference object is of " +
-                            "format $ref: '#/components/schemas/{schemaName}'");
-                }
                 errorMessageBuilder.append(", Error: ").append(Constants.OPENAPI_PARSE_EXCEPTION_ERROR_MESSAGE)
                         .append(", Swagger Error: ").append(message);
 
@@ -241,6 +236,8 @@ public class SwaggerValidateUtils {
                 writeResults(fileWriter, null, null, null, errorMessageBuilder.toString());
 
                 log.error(errorMessageBuilder.toString());
+
+             //   add to a list
             }
 
 

@@ -28,6 +28,9 @@ import org.wso2.carbon.authenticator.stub.LogoutAuthenticationExceptionException
 import org.apache.axis2.context.ServiceContext;
 import java.rmi.RemoteException;
 
+/**
+ * This class contains the logic to invoke the LoginAdminService and return the session Id.
+ */
 public class LoginAdminServiceClient {
     private static final Logger log = LoggerFactory.getLogger(LoginAdminServiceClient.class);
     private final String serviceName = "AuthenticationAdmin";

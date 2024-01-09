@@ -37,6 +37,7 @@
         <org.wso2.carbon.registry.resource.stub.version>4.7.35</org.wso2.carbon.registry.resource.stub.version>
         <slf4j.version>2.0.3</slf4j.version>
         <swagger.parser.v3.version>2.1.13</swagger.parser.v3.version>
+        <com.beust.jcommander.version>1.82</com.beust.jcommander.version>
 
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -47,6 +48,17 @@
             <id>mvn-wso2</id>
             <name>WSO2 Maven</name>
             <url>https://maven.wso2.org/nexus/content/repositories/releases/</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <updatePolicy>interval:60</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>mvn-repo2</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
             <releases>
                 <updatePolicy>never</updatePolicy>
             </releases>
@@ -105,6 +117,12 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-toml</artifactId>
             <version>${jackson-dataformat-toml.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.beust/jcommander -->
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>${com.beust.jcommander.version}</version>
         </dependency>
     </dependencies>
     <build>

@@ -25,14 +25,9 @@ import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionExcep
 import java.io.IOException;
 
 public class AdminServiceClientManager {
-    public static void invokeAdminServiceClient(String backendUrl, String userName, String password, String hostName,
-                                                String trustStorePath, String trustStorePassword)
+    public static void invokeAdminServiceClient(String backendUrl, String userName, String password, String hostName)
             throws IOException, LoginAuthenticationExceptionException, ResourceAdminServiceExceptionException,
             LogoutAuthenticationExceptionException {
-
-        System.setProperty("javax.net.ssl.trustStore", trustStorePath);
-        System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
-
 
         LoginAdminServiceClient loginAdminServiceClient =
                 new LoginAdminServiceClient(backendUrl);

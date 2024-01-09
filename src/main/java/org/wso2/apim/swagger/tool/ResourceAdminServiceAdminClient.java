@@ -27,6 +27,9 @@ import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceStub;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * This class contains the logic to invoke the ResourceAdminServices.
+ */
 public class ResourceAdminServiceAdminClient {
     private final String serviceName = "ResourceAdminService";
     private String resourcePath = "_system/governance/apimgt/applicationdata/provider/";
@@ -70,9 +73,10 @@ public class ResourceAdminServiceAdminClient {
                 String [] versions = resourceAdminServiceStub.getCollectionContent(apiName).getChildPaths();
 
                 for (String version : versions) {
+                    //get the tree and check before getting the text
                     String swaggerJson = resourceAdminServiceStub.getTextContent(version +
                             "/swagger.json").toString();
-
+        // add a null check. ex : swagger json can be missing
                     SwaggerValidateUtils.writeResults(fileWriter,
                             provider.substring(resourcePath.length() + 1),
                             apiName.substring(provider.length() + 1),

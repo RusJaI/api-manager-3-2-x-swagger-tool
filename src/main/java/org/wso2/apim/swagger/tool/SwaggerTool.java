@@ -18,6 +18,7 @@
 
 package org.wso2.apim.swagger.tool;
 
+import com.beust.jcommander.JCommander;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.toml.TomlFactory;
@@ -31,14 +32,17 @@ import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionExcep
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * This is the main class which contains the execution logic.
+ */
 public class SwaggerTool {
 
     private static final Logger log = LoggerFactory.getLogger(SwaggerTool.class);
-    private static String baseUrl = "https://localhost:9443/";
-    private static String hostName = "localhost";
+    private static String baseUrl;
+    private static String hostName;
     private static String userName;
     private static String password;
-
+    private static Boolean doDownload;
     private static String trustStoreAbsolutePath;
     private static String trustStorePassword;
 
@@ -48,9 +52,30 @@ public class SwaggerTool {
      */
     public static void main(String[] args) {
         try {
-            parseConfigsToml();
-            AdminServiceClientManager.invokeAdminServiceClient(baseUrl, userName, password, hostName,
-                    trustStoreAbsolutePath, trustStorePassword);
+            JcommanderArgs jcommanderArgs = new JcommanderArgs();
+            JCommander.newBuilder()
+                    .addObject(jcommanderArgs)
+                    .build()
+                    .parse(args);
+
+            userName = jcommanderArgs.getUsername();
+            password = jcommanderArgs.getPassword();
+            baseUrl = jcommanderArgs.getBaseurl();
+            hostName = jcommanderArgs.getHostname();
+            trustStoreAbsolutePath = jcommanderArgs.getTruststorepath();
+            trustStorePassword = jcommanderArgs.getTruststorepassword();
+            doDownload = jcommanderArgs.getDoDownload();
+
+            // remove / at the end of the base url
+            if (baseUrl.substring(baseUrl.length() -1).equals("/")) {
+                baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            }
+
+            System.setProperty(Constants.TRUSTSTORE, trustStoreAbsolutePath);
+            System.setProperty(Constants.TRUSTSTORE_PASSWORD, trustStorePassword);
+
+            AdminServiceClientManager.invokeAdminServiceClient(baseUrl, userName, password, hostName);
+
         } catch (IOException | LoginAuthenticationExceptionException | ResourceAdminServiceExceptionException |
                  LogoutAuthenticationExceptionException e) {
             log.error(e.getMessage(), e);

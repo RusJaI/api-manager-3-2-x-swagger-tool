@@ -25,9 +25,8 @@ public class Constants {
     public static final String OPENAPI_PARSE_EXCEPTION_ERROR_MESSAGE = "Error while parsing OpenAPI definition";
     public static final String UNABLE_TO_RENDER_THE_DEFINITION_ERROR = "Unable to render this definition, " +
             "The provided definition does not specify a valid version field.";
-
-
-    public static final String SCHEMA_REF_PATH = "#/components/schemas/";
+    public static final String TRUSTSTORE = "javax.net.ssl.trustStore";
+    public static final String TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
 
     public enum SwaggerVersion {
         SWAGGER,
