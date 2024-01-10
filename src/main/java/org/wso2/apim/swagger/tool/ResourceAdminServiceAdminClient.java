@@ -21,11 +21,16 @@ package org.wso2.apim.swagger.tool;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.client.Options;
 import org.apache.axis2.client.ServiceClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceStub;
+import org.wso2.carbon.registry.resource.stub.beans.xsd.CollectionContentBean;
 
-import java.io.FileWriter;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class contains the logic to invoke the ResourceAdminServices.
@@ -35,6 +40,8 @@ public class ResourceAdminServiceAdminClient {
     private String resourcePath = "_system/governance/apimgt/applicationdata/provider/";
     private ResourceAdminServiceStub resourceAdminServiceStub;
     private String endPoint;
+
+    private static final Logger log = LoggerFactory.getLogger(ResourceAdminServiceAdminClient.class);
 
     public ResourceAdminServiceAdminClient(String backEndUrl, String sessionCookie) throws AxisFault {
         this.endPoint = backEndUrl + "/services/" + serviceName;
@@ -53,39 +60,36 @@ public class ResourceAdminServiceAdminClient {
     public void validateCollectionContent()
             throws IOException, ResourceAdminServiceExceptionException {
 
-        // create the output file
-        FileWriter fileWriter = null;
-        try {
-            fileWriter = new FileWriter("report.txt", true);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        List<String> resourceFilePathList = new ArrayList<>();
+        traverseResourceTree(resourcePath, resourceFilePathList);
+
+        for (String resourceFilePath : resourceFilePathList) {
+            String swaggerJson = resourceAdminServiceStub.getTextContent(resourceFilePath).toString();
+            SwaggerValidateUtils.validateSwaggerContent(resourceFilePath.substring(resourcePath.length(),
+                            resourceFilePath.length()), swaggerJson);
         }
+    }
 
-        SwaggerValidateUtils.writeResults(fileWriter, "Provider", "API Name", "Version",
-                "Results");
-
-        String [] providers = resourceAdminServiceStub.getCollectionContent(resourcePath).getChildPaths();
-        for (String provider : providers) {
-            String [] apiNames =  resourceAdminServiceStub.getCollectionContent(provider)
-                    .getChildPaths();
-
-            for (String apiName : apiNames) {
-                String [] versions = resourceAdminServiceStub.getCollectionContent(apiName).getChildPaths();
-
-                for (String version : versions) {
-                    //get the tree and check before getting the text
-                    String swaggerJson = resourceAdminServiceStub.getTextContent(version +
-                            "/swagger.json").toString();
-        // add a null check. ex : swagger json can be missing
-                    SwaggerValidateUtils.writeResults(fileWriter,
-                            provider.substring(resourcePath.length() + 1),
-                            apiName.substring(provider.length() + 1),
-                            version.substring(apiName.length() + 1), null);
-
-                    SwaggerValidateUtils.validateSwaggerContent(swaggerJson, fileWriter);
+    protected List<String> traverseResourceTree(String path, List<String> resourcePathList)  {
+        if (path != null) {
+            try {
+                CollectionContentBean collectionContentBean =  resourceAdminServiceStub.getCollectionContent(path);
+                String[] childPaths = collectionContentBean.getChildPaths();
+                if (childPaths != null) {
+                    for (String childPath : childPaths) {
+                        traverseResourceTree(childPath, resourcePathList);
+                    }
+                }
+            } catch (RemoteException | ResourceAdminServiceExceptionException e) {
+                //catch exception when the resource path is of a leaf node
+                //12 = "swagger.json".length();
+                if (path.substring(path.length()-12, path.length()).equals("swagger.json")) {
+                    //add to list
+                    resourcePathList.add(path);
+                    log.info("leaf file path: " + path);
                 }
             }
         }
-        SwaggerValidateUtils.writeStatsSummary(fileWriter);
+        return resourcePathList;
     }
 }

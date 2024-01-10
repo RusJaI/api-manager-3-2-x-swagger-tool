@@ -45,23 +45,22 @@ public class SwaggerValidateUtils {
     static int validationSuccessFileCount = 0;
     static int totalMalformedSwaggerFiles = 0; //not a swagger (cannot parse at all)
     static int totalPartiallyParsedSwaggerFiles = 0;
+    static List<String> errorList;
 
 
     /**
      * @param swaggerFileContent swagger file content to be validated
      */
-    public static void validateSwaggerContent(String swaggerFileContent, FileWriter fileWriter) throws IOException {
+    public static void validateSwaggerContent(String abstractedFilePath,
+                                              String swaggerFileContent) {
         totalFileCount ++;
 
+        errorList = new ArrayList();
         List<Object> swaggerTypeAndName = getSwaggerVersion(swaggerFileContent);
 
         if (swaggerTypeAndName.size() == 1) { //something went wrong while parsing OAS definition
-
-            writeResults(fileWriter, null, null, null,
-                    "Error occurred while parsing OAS definition. " + swaggerTypeAndName.get(0).toString());
-
+            errorList.add("Error occurred while parsing OAS definition. " + swaggerTypeAndName.get(0).toString());
             totalMalformedSwaggerFiles++;
-
             return;
         }
 
@@ -69,21 +68,14 @@ public class SwaggerValidateUtils {
         if (swaggerTypeAndName.size() == 2) {
             if (swaggerTypeAndName.get(1) == null) {
                 log.error("Invalid OpenAPI : Error: " + Constants.OPENAPI_NAME_NOT_FOUND_ERROR_CODE);
-
-                // writing API entry to report
-                writeResults(fileWriter, null, null, null, "Invalid OpenAPI :  Error: "
-                        + Constants.OPENAPI_NAME_NOT_FOUND_ERROR_CODE);
+                errorList.add(Constants.OPENAPI_NAME_NOT_FOUND_ERROR_CODE);
                 totalMalformedSwaggerFiles++;
                 return;
 
             } else if (swaggerTypeAndName.get(0).equals(Constants.SwaggerVersion.ERROR)) {
                 log.error("Invalid OpenAPI : " + swaggerTypeAndName.get(1).toString() +
                         " , Error: " + Constants.OPENAPI_VERSION_NOT_FOUND_ERROR_CODE);
-
-                // writing API entry to report
-                writeResults(fileWriter, null, null, null, "Invalid OpenAPI : " +
-                        swaggerTypeAndName.get(1).toString() + " , Error: " +
-                        Constants.OPENAPI_VERSION_NOT_FOUND_ERROR_CODE);
+                errorList.add(Constants.OPENAPI_VERSION_NOT_FOUND_ERROR_CODE);
                 totalMalformedSwaggerFiles++;
                 return;
             }
@@ -94,18 +86,19 @@ public class SwaggerValidateUtils {
         if (swaggerTypeAndName.get(0).equals(Constants.SwaggerVersion.SWAGGER)) {
             log.info("---------------- Parsing Started SwaggerName \"" + swaggerTypeAndName.get(1).toString() +
                     "\" ----------------");
-            swagger2Validator(swaggerFileContent, fileWriter);
+            swagger2Validator(swaggerFileContent);
             log.info("---------------- Parsing Complete SwaggerName \"" + swaggerTypeAndName.get(1).toString() +
                     "\" ---------------- \n");
         } else if (swaggerTypeAndName.get(0).equals(Constants.SwaggerVersion.OPEN_API)) {
             log.info("---------------- Parsing Started openApiName \"" + swaggerTypeAndName.get(1).toString() +
                     "\" ----------------");
-            swagger3Validator(swaggerFileContent, fileWriter);
+            swagger3Validator(swaggerFileContent);
 
             log.info("---------------- Parsing Complete openApiName \"" + swaggerTypeAndName.get(1).toString() +
                     "\" ----------------\n");
         }
 
+        SwaggerTool.errorResultsMap.put(abstractedFilePath, errorList);
     }
 
     /**
@@ -143,7 +136,6 @@ public class SwaggerValidateUtils {
         String name = getSwaggerFileName(node.get("info"));
         JsonNode openapi = node.get("openapi");
         if (openapi != null && openapi.asText().startsWith("3.")) {
-
             swaggerTypeAndName.add(Constants.SwaggerVersion.OPEN_API);
             swaggerTypeAndName.add(name);
             return swaggerTypeAndName;
@@ -170,7 +162,7 @@ public class SwaggerValidateUtils {
         return null;
     }
 
-    public static void swagger2Validator(String swagger, FileWriter fileWriter) throws IOException {
+    public static void swagger2Validator(String swagger) {
 
         SwaggerParser parser = new SwaggerParser();
         SwaggerDeserializationResult parseAttemptForV2 = parser.readWithInfo(swagger);
@@ -179,44 +171,35 @@ public class SwaggerValidateUtils {
 
             for (String message : parseAttemptForV2.getMessages()) {
                 StringBuilder errorMessageBuilder = new StringBuilder("Invalid Swagger");
-
                 errorMessageBuilder.append(", Error: ").append(message);
-
-                // write to file
-                writeResults(fileWriter, null, null, null, errorMessageBuilder.toString());
-
+                errorList.add(message);
                 log.error(errorMessageBuilder.toString());
             }
             validationFailedFileCount++;
 
             if (parseAttemptForV2.getSwagger() != null) {
                 log.info("Swagger parsed with errors, using may lead to functionality issues.");
-                writeResults(fileWriter, null, null, null,
-                        "Swagger parsed with errors, using may lead to functionality issues");
+                errorList.add("Swagger parsed with errors, using may lead to functionality issues");
                 totalPartiallyParsedSwaggerFiles++;
             } else {
                 log.error("Malformed Swagger, Please fix the listed issues before proceeding");
-                writeResults(fileWriter, null, null, null,
-                        "Malformed Swagger, Please fix the listed issues before proceeding");
+                errorList.add("Malformed Swagger, Please fix the listed issues before proceeding");
                 totalMalformedSwaggerFiles++;
             }
         } else {
             if (parseAttemptForV2.getSwagger() != null) {
                 log.info("Swagger file is valid");
-                writeResults(fileWriter, null, null, null, "Swagger file is valid");
 
                 validationSuccessFileCount++;
             } else {
                 log.error(Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
-                writeResults(fileWriter, null, null, null,
-                        Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
-
+                errorList.add(Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
                 validationFailedFileCount++;
             }
         }
     }
 
-    public static void swagger3Validator(String swagger, FileWriter fileWriter) throws IOException {
+    public static void swagger3Validator(String swagger) {
 
         OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
         ParseOptions options = new ParseOptions();
@@ -232,26 +215,18 @@ public class SwaggerValidateUtils {
                 errorMessageBuilder.append(", Error: ").append(Constants.OPENAPI_PARSE_EXCEPTION_ERROR_MESSAGE)
                         .append(", Swagger Error: ").append(message);
 
-                // write to file
-                writeResults(fileWriter, null, null, null, errorMessageBuilder.toString());
-
+                errorList.add(message);
                 log.error(errorMessageBuilder.toString());
 
-             //   add to a list
             }
-
 
             if (parseResult.getOpenAPI() != null) {
                 log.info("OpenAPI parsed with errors, using may lead to functionality issues.");
-                writeResults(fileWriter, null, null, null,
-                        "OpenAPI parsed with errors, using may lead to functionality issues");
-
+                errorList.add("OpenAPI parsed with errors, using may lead to functionality issues");
                 totalPartiallyParsedSwaggerFiles++;
             } else {
                 log.error("Malformed OpenAPI, Please fix the listed issues before proceeding");
-                writeResults(fileWriter, null, null, null,
-                        "Malformed OpenAPI, Please fix the listed issues before proceeding");
-
+                errorList.add("Malformed OpenAPI, Please fix the listed issues before proceeding");
                 ++totalMalformedSwaggerFiles;
             }
 
@@ -260,15 +235,10 @@ public class SwaggerValidateUtils {
         } else {
             if (parseResult.getOpenAPI() != null) {
                 log.info("Swagger file is valid OpenAPI 3 definition");
-                writeResults(fileWriter, null, null, null,
-                        "Swagger file is valid OpenAPI 3 definition");
-
                 validationSuccessFileCount++;
             } else {
                 log.error(Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
-                writeResults(fileWriter, null, null, null,
-                        Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
-
+                errorList.add(Constants.UNABLE_TO_RENDER_THE_DEFINITION_ERROR);
                 validationFailedFileCount++;
             }
         }
@@ -276,13 +246,28 @@ public class SwaggerValidateUtils {
 
     static void writeStatsSummary (FileWriter fileWriter) throws IOException {
 
+        writeResults(fileWriter, "API Path",
+                "Results");
+
+        for (String key : SwaggerTool.errorResultsMap.keySet()) {
+            List<String> values = SwaggerTool.errorResultsMap.get(key);
+            if (values.size() > 0) {
+                for (int i = 0; i < values.size(); i++) {
+                    if (i == 0) {
+                        writeResults(fileWriter, key, values.get(i));
+                    } else {
+                        writeResults(fileWriter, null, values.get(i));
+                    }
+                }
+            }
+        }
+
         fileWriter.append("\n---------------Summary ---------------- " +
                 "\nTotal Files Processed: " + totalFileCount +
                 "\nTotal Successful Files Count " + validationSuccessFileCount +
                 "\nTotal Failed Files Count: " + validationFailedFileCount +
                 "\nTotal Malformed Swagger File Count: " + totalMalformedSwaggerFiles +
                 "\n\n");
-
 
         log.info("Summary --- Total Files Processed: " + totalFileCount + ". Total Successful Files Count "
                 + validationSuccessFileCount + ". Total Failed Files Count: " + validationFailedFileCount + ". " +
@@ -292,11 +277,9 @@ public class SwaggerValidateUtils {
 
     }
 
-    protected static void writeResults(FileWriter fileWriter, String provider, String apiName,
-                                     String apiVersion, String results) throws IOException {
-        fileWriter.append(String.format("%-20s %-20s %-20s %-20s%n", provider == null ? "" : provider,
-                apiName == null ? "" : apiName, apiVersion == null ? "" : apiVersion, results == null ? "" : results));
-
+    protected static void writeResults(FileWriter fileWriter, String filePath, String results) throws IOException {
+        fileWriter.append(String.format("%-60s %-60s%n", filePath == null ? "" : filePath,
+                results == null ? "" : results + "\n"));
     }
 
 }

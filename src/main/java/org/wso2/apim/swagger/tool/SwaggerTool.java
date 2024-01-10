@@ -19,9 +19,6 @@
 package org.wso2.apim.swagger.tool;
 
 import com.beust.jcommander.JCommander;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.dataformat.toml.TomlFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +27,13 @@ import org.wso2.carbon.authenticator.stub.LogoutAuthenticationExceptionException
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This is the main class which contains the execution logic.
@@ -46,6 +49,7 @@ public class SwaggerTool {
     private static String trustStoreAbsolutePath;
     private static String trustStorePassword;
 
+    protected static Map<String, List<String>> errorResultsMap = new HashMap<String, List<String>>();
 
     /**
      * No parameters are supported when executing the tool.
@@ -74,7 +78,41 @@ public class SwaggerTool {
             System.setProperty(Constants.TRUSTSTORE, trustStoreAbsolutePath);
             System.setProperty(Constants.TRUSTSTORE_PASSWORD, trustStorePassword);
 
+            String currentDate = new SimpleDateFormat("yyyyMMdd_HH-mm-ss").format(new Date());
+            // Define the folder structure
+            String folderPath = "results/" + currentDate;
+            String filePath = folderPath + "/result.txt";
+
+            // Create the folder structure
+            File folder = new File(folderPath);
+            if (!folder.exists()) {
+                boolean success = folder.mkdirs();
+                if (!success) {
+                    log.error("Error creating folder structure.");
+                    return;
+                }
+            }
+
+            // Create the results.txt file
+            File file = new File(filePath);
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                log.error("Error creating file: " + filePath);
+                e.printStackTrace();
+            }
+
+            // create the output file
+            FileWriter fileWriter = null;
+            try {
+                fileWriter = new FileWriter(file, true);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
             AdminServiceClientManager.invokeAdminServiceClient(baseUrl, userName, password, hostName);
+
+            SwaggerValidateUtils.writeStatsSummary(fileWriter);
 
         } catch (IOException | LoginAuthenticationExceptionException | ResourceAdminServiceExceptionException |
                  LogoutAuthenticationExceptionException e) {
@@ -83,57 +121,4 @@ public class SwaggerTool {
         }
     }
 
-    private static void parseConfigsToml() throws IOException {
-        TomlFactory tomlFactory = new TomlFactory();
-        JsonParser parser = tomlFactory.createParser(new File("/Users/rusirijayodaillesinghe/Documents/" +
-                "APIM_Repos/api-manager-3-2-x-swagger-tool/src/main/resources/config.toml"));
-
-        while (!parser.isClosed()) {
-            JsonToken token = parser.nextToken();
-
-            /* null indicates end-of-input */
-            if (token == null)
-                break;
-
-            String fieldName =  parser.getCurrentName();
-
-            if ("carbon_server".equals(fieldName)) {
-                while (token != JsonToken.END_OBJECT) {
-                    if (fieldName.equalsIgnoreCase("baseurl")) { // remove / at the end of the base url
-                        String extractedUrl = parser.getText();
-                        if (extractedUrl.substring(extractedUrl.length() -1).equals("/")) {
-                            baseUrl = extractedUrl.substring(0, extractedUrl.length() - 1);
-                        } else {
-                            baseUrl = extractedUrl;
-                        }
-                    }
-                    if (fieldName.equalsIgnoreCase("hostname")) {
-                        hostName = parser.getText();
-                    }
-                    if (fieldName.equalsIgnoreCase("username")) {
-                        userName = parser.getText();
-                    }
-                    if (fieldName.equalsIgnoreCase("password")) {
-                        password = parser.getText();
-                    }
-                    token = parser.nextToken();
-                    fieldName = parser.getCurrentName();
-                }
-            }
-
-            if ("truststore".equals(fieldName)) {
-                while (token != JsonToken.END_OBJECT) {
-                    if (fieldName.equalsIgnoreCase("absolute_path")) {
-                        trustStoreAbsolutePath = parser.getText();
-                    }
-                    if (fieldName.equalsIgnoreCase("password")) {
-                        trustStorePassword = parser.getText();
-                    }
-                    token = parser.nextToken();
-                    fieldName = parser.getCurrentName();
-                }
-            }
-        }
-        parser.close();
-    }
 }

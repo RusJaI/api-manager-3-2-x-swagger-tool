@@ -48,7 +48,6 @@ public class LoginAdminServiceClient {
 
         if (authenticationAdminStub.login(userName, password, hostName)) {
             log.info("Login Successful");
-
             ServiceContext serviceContext = authenticationAdminStub.
                     _getServiceClient().getLastOperationContext().getServiceContext();
             sessionCookie = (String) serviceContext.getProperty(HTTPConstants.COOKIE_STRING);
