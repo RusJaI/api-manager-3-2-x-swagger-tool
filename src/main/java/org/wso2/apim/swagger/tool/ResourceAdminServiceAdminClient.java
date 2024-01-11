@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceStub;
-import org.wso2.carbon.registry.resource.stub.beans.xsd.CollectionContentBean;
+import org.wso2.carbon.registry.resource.stub.beans.xsd.ResourceTreeEntryBean;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -61,30 +61,31 @@ public class ResourceAdminServiceAdminClient {
             throws IOException, ResourceAdminServiceExceptionException {
 
         List<String> resourceFilePathList = new ArrayList<>();
-        traverseResourceTree(resourcePath, resourceFilePathList);
+        traverseApiResourceTree(resourcePath, resourceFilePathList);
 
         for (String resourceFilePath : resourceFilePathList) {
             String swaggerJson = resourceAdminServiceStub.getTextContent(resourceFilePath).toString();
-            SwaggerValidateUtils.validateSwaggerContent(resourceFilePath.substring(resourcePath.length(),
-                            resourceFilePath.length()), swaggerJson);
+            boolean hasErrors = SwaggerValidateUtils.validateSwaggerContent(resourceFilePath.
+                    substring(resourcePath.length() + 1, resourceFilePath.length()), swaggerJson);
+            if (hasErrors) {
+                SwaggerTool.errorSwaggers.put(resourceFilePath.substring(resourcePath.length() + 1).
+                        replace('/', '-'), swaggerJson);
+            }
         }
     }
 
-    protected List<String> traverseResourceTree(String path, List<String> resourcePathList)  {
+    protected List<String> traverseApiResourceTree(String path, List<String> resourcePathList) throws
+            RemoteException, ResourceAdminServiceExceptionException {
         if (path != null) {
-            try {
-                CollectionContentBean collectionContentBean =  resourceAdminServiceStub.getCollectionContent(path);
-                String[] childPaths = collectionContentBean.getChildPaths();
-                if (childPaths != null) {
-                    for (String childPath : childPaths) {
-                        traverseResourceTree(childPath, resourcePathList);
-                    }
+            ResourceTreeEntryBean resourceTreeEntry =  resourceAdminServiceStub.getResourceTreeEntry(path);
+            if (resourceTreeEntry.getCollection()) { // collection=true if a directory
+                String[] childPaths = resourceTreeEntry.getChildren();
+                for (String childPath : childPaths) {
+                    traverseApiResourceTree(childPath, resourcePathList);
                 }
-            } catch (RemoteException | ResourceAdminServiceExceptionException e) {
-                //catch exception when the resource path is of a leaf node
-                //12 = "swagger.json".length();
+            } else {
+                //collection=false if the leaf node
                 if (path.substring(path.length()-12, path.length()).equals("swagger.json")) {
-                    //add to list
                     resourcePathList.add(path);
                     log.info("leaf file path: " + path);
                 }
@@ -92,4 +93,5 @@ public class ResourceAdminServiceAdminClient {
         }
         return resourcePathList;
     }
+
 }

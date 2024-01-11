@@ -51,7 +51,7 @@ public class SwaggerValidateUtils {
     /**
      * @param swaggerFileContent swagger file content to be validated
      */
-    public static void validateSwaggerContent(String abstractedFilePath,
+    public static boolean validateSwaggerContent(String abstractedFilePath,
                                               String swaggerFileContent) {
         totalFileCount ++;
 
@@ -61,7 +61,7 @@ public class SwaggerValidateUtils {
         if (swaggerTypeAndName.size() == 1) { //something went wrong while parsing OAS definition
             errorList.add("Error occurred while parsing OAS definition. " + swaggerTypeAndName.get(0).toString());
             totalMalformedSwaggerFiles++;
-            return;
+            return true;
         }
 
         // after parsing the OAS definition, errors found in its version or name
@@ -70,14 +70,14 @@ public class SwaggerValidateUtils {
                 log.error("Invalid OpenAPI : Error: " + Constants.OPENAPI_NAME_NOT_FOUND_ERROR_CODE);
                 errorList.add(Constants.OPENAPI_NAME_NOT_FOUND_ERROR_CODE);
                 totalMalformedSwaggerFiles++;
-                return;
+                return true;
 
             } else if (swaggerTypeAndName.get(0).equals(Constants.SwaggerVersion.ERROR)) {
                 log.error("Invalid OpenAPI : " + swaggerTypeAndName.get(1).toString() +
                         " , Error: " + Constants.OPENAPI_VERSION_NOT_FOUND_ERROR_CODE);
                 errorList.add(Constants.OPENAPI_VERSION_NOT_FOUND_ERROR_CODE);
                 totalMalformedSwaggerFiles++;
-                return;
+                return true;
             }
             // In this block, only the error scenarios are considered.
             // correct type, name combination is also of size 2 which is not addressed within the block
@@ -99,6 +99,8 @@ public class SwaggerValidateUtils {
         }
 
         SwaggerTool.errorResultsMap.put(abstractedFilePath, errorList);
+
+        return errorList.size() > 0;
     }
 
     /**

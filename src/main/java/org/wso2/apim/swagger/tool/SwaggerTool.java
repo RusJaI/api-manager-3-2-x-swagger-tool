@@ -50,6 +50,7 @@ public class SwaggerTool {
     private static String trustStorePassword;
 
     protected static Map<String, List<String>> errorResultsMap = new HashMap<String, List<String>>();
+    protected static Map<String,String> errorSwaggers = new HashMap<>();
 
     /**
      * No parameters are supported when executing the tool.
@@ -114,6 +115,11 @@ public class SwaggerTool {
 
             SwaggerValidateUtils.writeStatsSummary(fileWriter);
 
+            if (doDownload) {
+                // need to download invalid/malformed swaggers
+                downloadErrorFiles();
+            }
+
         } catch (IOException | LoginAuthenticationExceptionException | ResourceAdminServiceExceptionException |
                  LogoutAuthenticationExceptionException e) {
             log.error(e.getMessage(), e);
@@ -121,4 +127,27 @@ public class SwaggerTool {
         }
     }
 
+    protected static void downloadErrorFiles() throws IOException {
+        String folderPath = "errorSwaggers";
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            boolean success = folder.mkdirs();
+            if (!success) {
+                log.error("Error creating folder structure.");
+                return;
+            }
+        }
+        for (String swaggerPathName : errorSwaggers.keySet()) {
+            File outputFile = new File(folderPath + File.separator + swaggerPathName);
+            try {
+                outputFile.createNewFile();
+            } catch (IOException e) {
+                log.error("Error creating file: " + outputFile);
+                e.printStackTrace();
+            }
+            FileWriter writer = new FileWriter(outputFile);
+            writer.write(errorSwaggers.get(swaggerPathName));
+            writer.close();
+        }
+    }
 }
