@@ -30,7 +30,9 @@ import org.wso2.carbon.registry.resource.stub.beans.xsd.ResourceTreeEntryBean;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class contains the logic to invoke the ResourceAdminServices.
@@ -66,12 +68,18 @@ public class ResourceAdminServiceAdminClient {
         for (String resourceFilePath : resourceFilePathList) {
             String swaggerJson = resourceAdminServiceStub.getTextContent(resourceFilePath).toString();
             boolean hasErrors = SwaggerValidateUtils.validateSwaggerContent(resourceFilePath.
-                    substring(resourcePath.length() + 1, resourceFilePath.length()), swaggerJson);
+                    substring(resourcePath.length() + 1), swaggerJson);
             if (hasErrors) {
-                SwaggerTool.errorSwaggers.put(resourceFilePath.substring(resourcePath.length() + 1).
-                        replace('/', '-'), swaggerJson);
+                SwaggerTool.errorSwaggers.put(getSwaggerName(resourceFilePath.substring(
+                        resourcePath.length() + 1)), swaggerJson);
             }
         }
+    }
+
+    private String getSwaggerName(String swaggerPath) {
+        String[] parts = swaggerPath.split("/");
+        int pathSize = parts.length;
+        return parts[pathSize-3] + "-" + parts[pathSize-2] + ".json";
     }
 
     protected List<String> traverseApiResourceTree(String path, List<String> resourcePathList) throws

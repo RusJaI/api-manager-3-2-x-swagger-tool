@@ -248,17 +248,18 @@ public class SwaggerValidateUtils {
 
     static void writeStatsSummary (FileWriter fileWriter) throws IOException {
 
-        writeResults(fileWriter, "API Path",
+        writeResults(fileWriter, "API Name", "API Version", "API Provider",
                 "Results");
 
         for (String key : SwaggerTool.errorResultsMap.keySet()) {
             List<String> values = SwaggerTool.errorResultsMap.get(key);
             if (values.size() > 0) {
+                String [] apiData = key.split("/");
                 for (int i = 0; i < values.size(); i++) {
                     if (i == 0) {
-                        writeResults(fileWriter, key, values.get(i));
+                        writeResults(fileWriter, apiData[apiData.length-3], apiData[apiData.length-2], getProvider(apiData), values.get(i));
                     } else {
-                        writeResults(fileWriter, null, values.get(i));
+                        writeResults(fileWriter, null, null, null, values.get(i));
                     }
                 }
             }
@@ -279,8 +280,17 @@ public class SwaggerValidateUtils {
 
     }
 
-    protected static void writeResults(FileWriter fileWriter, String filePath, String results) throws IOException {
-        fileWriter.append(String.format("%-60s %-60s%n", filePath == null ? "" : filePath,
+    private static String getProvider(String[] apiData) {
+        String providerString = "";
+        for (int i = 0; i < apiData.length-3; i++) {
+            providerString = providerString + apiData[i];
+        }
+        return providerString;
+    }
+
+    protected static void writeResults(FileWriter fileWriter, String apiName, String apiVersion, String apiProvider, String results) throws IOException {
+        fileWriter.append(String.format("%-30s %-20s %-30s %-60s%n", apiName == null ? "" : apiName,
+                apiVersion == null ? "" : apiVersion, apiProvider == null ? "" : apiProvider,
                 results == null ? "" : results + "\n"));
     }
 
