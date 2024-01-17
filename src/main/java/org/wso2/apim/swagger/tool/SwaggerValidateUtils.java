@@ -41,9 +41,18 @@ import java.util.List;
 public class SwaggerValidateUtils {
     private static final Log log = LogFactory.getLog(SwaggerTool.class);
     static int totalFileCount = 0;
-    static int validationFailedFileCount = 0; // errors identifying while parsing
+
+    /**
+     * Errors identifying while parsing
+     */
+    static int validationFailedFileCount = 0;
     static int validationSuccessFileCount = 0;
-    static int totalMalformedSwaggerFiles = 0; //not a swagger (cannot parse at all)
+
+
+    /**
+     * Not a swagger (cannot parse at all)
+     */
+    static int totalMalformedSwaggerFiles = 0;
     static int totalPartiallyParsedSwaggerFiles = 0;
     static List<String> errorList;
 

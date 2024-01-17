@@ -80,6 +80,16 @@ public class ResourceAdminServiceAdminClient {
         return parts[pathSize-3] + "-" + parts[pathSize-2] + ".json";
     }
 
+    /**
+     * Get the leaf nodes traversing the api directories. resourceTreeEntry.getCollection() returns whether
+     * it's a directory or a leaf node containing the api and the swagger.json.
+     *
+     * @param path String path to access the resource
+     * @param resourcePathList List<String> list of swagger paths
+     * @return List<String> list of swagger paths
+     * @throws RemoteException
+     * @throws ResourceAdminServiceExceptionException
+     */
     protected List<String> traverseApiResourceTree(String path, List<String> resourcePathList) throws
             RemoteException, ResourceAdminServiceExceptionException {
         if (path != null) {
@@ -90,9 +100,7 @@ public class ResourceAdminServiceAdminClient {
                     traverseApiResourceTree(childPath, resourcePathList);
                 }
             } else {
-                //collection=false if the leaf node
                 if (path.endsWith("swagger.json")) {
-                //if (path.substring(path.length()-12, path.length()).equals("swagger.json")) {//swap, endswith
                     resourcePathList.add(path);
                     log.info("leaf file path: " + path);
                 }
