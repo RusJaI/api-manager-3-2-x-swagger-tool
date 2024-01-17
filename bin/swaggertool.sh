@@ -1,4 +1,4 @@
-#!/sh
+#!/bin/sh
 # ----------------------------------------------------------------------------
 
 #Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
@@ -28,7 +28,7 @@ custom_classpath="$jar_path"
 
 string1='com.fasterxml.jackson.*'
 string='org.wso2.carbon.authenticator.stub*';
-declare -a arr=("com.fasterxml.jackson" "org.wso2.carbon.authenticator.stub" "org.wso2.carbon.registry.resource.stub" "jcommander" "commons-logging" "axis2" "org.wso2.carbon.um.ws.api.stub" "axiom_" "wsdl4j.wso2" "XmlSchema" "neethi" "activation" "org.wso2.securevault" "commons-httpclient" "httpclient_" "httpcore_" "commons-codec-" "swagger-parser_" "slf4j-api" "org.yaml.snakeyaml" "swagger-core")
+declare -a arr=("com.fasterxml.jackson" "org.wso2.carbon.authenticator.stub" "org.wso2.carbon.registry.resource.stub" "jcommander" "commons-logging" "axis2" "org.wso2.carbon.um.ws.api.stub" "axiom_" "wsdl4j.wso2" "XmlSchema" "neethi" "activation" "org.wso2.securevault" "commons-httpclient" "httpclient_" "httpcore_" "commons-codec-" "swagger-parser_" "slf4j-api" "org.yaml.snakeyaml" "swagger-core" "org.wso2.carbon.utils_" "org.wso2.carbon.base_")
 
 for t in "$current_directory"/repository/components/plugins/*.jar
 do

@@ -22,8 +22,6 @@ import com.beust.jcommander.JCommander;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
-import org.wso2.carbon.authenticator.stub.LogoutAuthenticationExceptionException;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 
 import java.io.File;
@@ -42,7 +40,6 @@ public class SwaggerTool {
 
     private static final Log log = LogFactory.getLog(SwaggerTool.class);
     private static String baseUrl;
-    private static String hostName;
     private static String userName;
     private static String password;
     private static Boolean doDownload;
@@ -66,7 +63,6 @@ public class SwaggerTool {
             userName = jcommanderArgs.getUsername();
             password = jcommanderArgs.getPassword();
             baseUrl = jcommanderArgs.getBaseurl();
-            hostName = jcommanderArgs.getHostname();
             trustStoreAbsolutePath = jcommanderArgs.getTruststorepath();
             trustStorePassword = jcommanderArgs.getTruststorepassword();
             doDownload = jcommanderArgs.getDoDownload();
@@ -111,7 +107,9 @@ public class SwaggerTool {
                 throw new RuntimeException(e);
             }
 
-            AdminServiceClientManager.invokeAdminServiceClient(baseUrl, userName, password, hostName);
+            ResourceAdminServiceAdminClient resourceAdminServiceAdminClient = new
+                    ResourceAdminServiceAdminClient(baseUrl, userName, password);
+            resourceAdminServiceAdminClient.validateCollectionContent();
 
             SwaggerValidateUtils.writeStatsSummary(fileWriter);
 
@@ -120,8 +118,7 @@ public class SwaggerTool {
                 downloadErrorFiles();
             }
 
-        } catch (IOException | LoginAuthenticationExceptionException | ResourceAdminServiceExceptionException |
-                 LogoutAuthenticationExceptionException e) {
+        } catch (IOException | ResourceAdminServiceExceptionException e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }

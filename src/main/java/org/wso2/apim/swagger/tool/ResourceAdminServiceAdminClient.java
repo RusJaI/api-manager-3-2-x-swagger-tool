@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceStub;
 import org.wso2.carbon.registry.resource.stub.beans.xsd.ResourceTreeEntryBean;
+import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -43,18 +44,16 @@ public class ResourceAdminServiceAdminClient {
 
     private static final Log log = LogFactory.getLog(ResourceAdminServiceAdminClient.class);
 
-    public ResourceAdminServiceAdminClient(String backEndUrl, String sessionCookie) throws AxisFault {
+    public ResourceAdminServiceAdminClient(String backEndUrl, String username, String password) throws AxisFault {
         this.endPoint = backEndUrl + "/services/" + serviceName;
         resourceAdminServiceStub = new ResourceAdminServiceStub(endPoint);
 
-        //Authenticate Your stub from sessionCooke
-        ServiceClient serviceClient;
-        Options option;
+        ServiceClient client = resourceAdminServiceStub._getServiceClient();
+        Options options = client.getOptions();
+        options.setCallTransportCleanup(true);
+        options.setManageSession(true);
+        CarbonUtils.setBasicAccessSecurityHeaders(username, password, client);
 
-        serviceClient = resourceAdminServiceStub._getServiceClient();
-        option = serviceClient.getOptions();
-        option.setManageSession(true);
-        option.setProperty(org.apache.axis2.transport.http.HTTPConstants.COOKIE_STRING, sessionCookie);
     }
 
     public void validateCollectionContent()

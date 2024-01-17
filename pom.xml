@@ -35,6 +35,7 @@
         <org.wso2.carbon.authenticator.stub.version>4.6.0</org.wso2.carbon.authenticator.stub.version>
         <org.wso2.carbon.um.ws.api.stub.version>5.4.0</org.wso2.carbon.um.ws.api.stub.version>
         <org.wso2.carbon.registry.resource.stub.version>4.7.35</org.wso2.carbon.registry.resource.stub.version>
+        <org.wso2.carbon.utils.version>4.6.0</org.wso2.carbon.utils.version>
         <swagger.parser.v3.version>2.1.13</swagger.parser.v3.version>
         <com.beust.jcommander.version>1.82</com.beust.jcommander.version>
 
@@ -101,6 +102,11 @@
             <groupId>org.wso2.carbon.registry</groupId>
             <artifactId>org.wso2.carbon.registry.resource.stub</artifactId>
             <version>${org.wso2.carbon.registry.resource.stub.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.utils</artifactId>
+            <version>${org.wso2.carbon.utils.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-toml -->
         <dependency>

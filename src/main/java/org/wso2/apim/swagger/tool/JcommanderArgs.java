@@ -37,9 +37,6 @@ public class JcommanderArgs {
     @Parameter(names = {"--download", "-d"}, description = "Download Invalid and Malformed Swaggers")
     private boolean doDownload = false;
 
-    @Parameter(names = {"--hostname", "-h"}, description = "Hostname of the carbon server")
-    private String hostname = "localhost";//remove
-
     @Parameter(names = {"--truststorepath", "-trustpath"}, description = "Absolute path to trust store")
     private String truststorepath = // TODO : Remove hardcoded values
             "/Users/rusirijayodaillesinghe/Documents/APIM_Repos/api-manager-3-2-x-swagger-tool/src/main/resources/security/client-truststore.jks";
@@ -62,10 +59,6 @@ public class JcommanderArgs {
 
     protected Boolean getDoDownload() {
         return doDownload;
-    }
-
-    protected String getHostname() {
-        return hostname;
     }
 
     protected String getTruststorepath() {
