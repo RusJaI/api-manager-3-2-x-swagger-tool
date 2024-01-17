@@ -31,7 +31,8 @@ public class AdminServiceClientManager {
 
         LoginAdminServiceClient loginAdminServiceClient =
                 new LoginAdminServiceClient(backendUrl);
-        String sessionId = loginAdminServiceClient.authenticate(hostName, userName, password);
+        String sessionId = loginAdminServiceClient.authenticate(hostName, userName, password);//setbasicsecurityheaders
+        //CarbonUtils.setBasicAccessSecurityHeaders(username, password, client); of BasicAuthCredentialValidator
 
         ResourceAdminServiceAdminClient resourceAdminServiceAdminClient = new
                 ResourceAdminServiceAdminClient(backendUrl, sessionId);

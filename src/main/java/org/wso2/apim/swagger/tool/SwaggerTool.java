@@ -20,8 +20,8 @@ package org.wso2.apim.swagger.tool;
 
 import com.beust.jcommander.JCommander;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.authenticator.stub.LogoutAuthenticationExceptionException;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
@@ -40,7 +40,7 @@ import java.util.Map;
  */
 public class SwaggerTool {
 
-    private static final Logger log = LoggerFactory.getLogger(SwaggerTool.class);
+    private static final Log log = LogFactory.getLog(SwaggerTool.class);
     private static String baseUrl;
     private static String hostName;
     private static String userName;

@@ -20,8 +20,8 @@ package org.wso2.apim.swagger.tool;
 
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.transport.http.HTTPConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.authenticator.stub.AuthenticationAdminStub;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.authenticator.stub.LogoutAuthenticationExceptionException;
@@ -32,7 +32,7 @@ import java.rmi.RemoteException;
  * This class contains the logic to invoke the LoginAdminService and return the session Id.
  */
 public class LoginAdminServiceClient {
-    private static final Logger log = LoggerFactory.getLogger(LoginAdminServiceClient.class);
+    private static final Log log = LogFactory.getLog(LoginAdminServiceClient.class);
     private final String serviceName = "AuthenticationAdmin";
     private AuthenticationAdminStub authenticationAdminStub;
     private String endPoint;

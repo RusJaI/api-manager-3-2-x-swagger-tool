@@ -38,7 +38,7 @@ public class JcommanderArgs {
     private boolean doDownload = false;
 
     @Parameter(names = {"--hostname", "-h"}, description = "Hostname of the carbon server")
-    private String hostname = "localhost";
+    private String hostname = "localhost";//remove
 
     @Parameter(names = {"--truststorepath", "-trustpath"}, description = "Absolute path to trust store")
     private String truststorepath = // TODO : Remove hardcoded values

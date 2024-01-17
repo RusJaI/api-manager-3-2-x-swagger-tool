@@ -21,8 +21,8 @@ package org.wso2.apim.swagger.tool;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.client.Options;
 import org.apache.axis2.client.ServiceClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionException;
 import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceStub;
 import org.wso2.carbon.registry.resource.stub.beans.xsd.ResourceTreeEntryBean;
@@ -30,9 +30,7 @@ import org.wso2.carbon.registry.resource.stub.beans.xsd.ResourceTreeEntryBean;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class contains the logic to invoke the ResourceAdminServices.
@@ -43,7 +41,7 @@ public class ResourceAdminServiceAdminClient {
     private ResourceAdminServiceStub resourceAdminServiceStub;
     private String endPoint;
 
-    private static final Logger log = LoggerFactory.getLogger(ResourceAdminServiceAdminClient.class);
+    private static final Log log = LogFactory.getLog(ResourceAdminServiceAdminClient.class);
 
     public ResourceAdminServiceAdminClient(String backEndUrl, String sessionCookie) throws AxisFault {
         this.endPoint = backEndUrl + "/services/" + serviceName;
@@ -93,7 +91,8 @@ public class ResourceAdminServiceAdminClient {
                 }
             } else {
                 //collection=false if the leaf node
-                if (path.substring(path.length()-12, path.length()).equals("swagger.json")) {
+                if (path.endsWith("swagger.json")) {
+                //if (path.substring(path.length()-12, path.length()).equals("swagger.json")) {//swap, endswith
                     resourcePathList.add(path);
                     log.info("leaf file path: " + path);
                 }

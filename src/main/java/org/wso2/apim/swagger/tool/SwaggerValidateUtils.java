@@ -27,8 +27,8 @@ import io.swagger.v3.parser.ObjectMapperFactory;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.List;
  * This class contains the set of functions for validating swagger files
  */
 public class SwaggerValidateUtils {
-    private static final Logger log = LoggerFactory.getLogger(SwaggerTool.class);
+    private static final Log log = LogFactory.getLog(SwaggerTool.class);
     static int totalFileCount = 0;
     static int validationFailedFileCount = 0; // errors identifying while parsing
     static int validationSuccessFileCount = 0;

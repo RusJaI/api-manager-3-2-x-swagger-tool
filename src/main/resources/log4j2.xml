@@ -29,9 +29,11 @@
     <Loggers>
         <Logger name="io.swagger.util" level="OFF" additivity="true"/>
         <Logger name="io.swagger.v3" level="OFF" additivity="true"/>
-        <Root level="INFO">
+        <Logger name="org.apache.axis2" level="INFO"/>
+        <Root level="ERROR">
             <AppenderRef ref="ConsoleAppender"/>
             <AppenderRef ref="FileAppender"/>
         </Root>
     </Loggers>
+
 </Configuration>
