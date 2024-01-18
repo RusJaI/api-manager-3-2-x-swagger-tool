@@ -75,16 +75,24 @@ public class SwaggerTool {
             System.setProperty(Constants.TRUSTSTORE, trustStoreAbsolutePath);
             System.setProperty(Constants.TRUSTSTORE_PASSWORD, trustStorePassword);
 
-            String currentDate = new SimpleDateFormat("yyyyMMdd_HH-mm-ss").format(new Date());
+            String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             // Define the folder structure
             String folderPath = "results/" + currentDate;
             String filePath = folderPath + "/result.txt";
 
             // Create the folder structure
             File folder = new File(folderPath);
-            if (!folder.exists()) {
-                boolean success = folder.mkdirs();
-                if (!success) {
+
+            if (folder.exists()) {
+                boolean isDeleteSuccess = deleteFiles(folder);
+                if (!isDeleteSuccess) {
+                    log.error("Error deleting the existing directory content. " +
+                            "Please check if you have currently using the any of the files");
+                    return;
+                }
+            } else {
+                boolean isDirectoryCreationSuccess = folder.mkdirs();
+                if (!isDirectoryCreationSuccess) {
                     log.error("Error creating folder structure.");
                     return;
                 }
@@ -115,7 +123,7 @@ public class SwaggerTool {
 
             if (doDownload) {
                 // need to download invalid/malformed swaggers
-                downloadErrorFiles();
+                downloadErrorFiles(folderPath);
             }
 
         } catch (IOException | ResourceAdminServiceExceptionException e) {
@@ -124,12 +132,29 @@ public class SwaggerTool {
         }
     }
 
-    protected static void downloadErrorFiles() throws IOException {
-        String folderPath = "errorSwaggers";
+    private static boolean deleteFiles(File folder) {
+        boolean isDeleteSuccess;
+        if (folder.isFile() || (folder.isDirectory() && folder.list().length == 0)) {
+            isDeleteSuccess = folder.delete();
+            if (!isDeleteSuccess) {
+                return false;
+            }
+        } else {
+            String[] entries = folder.list();
+            for (String entry : entries) {
+                File file = new File(folder.getPath(), entry);
+                deleteFiles(file);
+            }
+        }
+        return true;
+    }
+
+    protected static void downloadErrorFiles(String folderPath) throws IOException {
+        folderPath = folderPath.concat(File.separator + "errorSwaggers");
         File folder = new File(folderPath);
         if (!folder.exists()) {
-            boolean success = folder.mkdirs();
-            if (!success) {
+            boolean isDirectoryCreationSuccess = folder.mkdirs();
+            if (!isDirectoryCreationSuccess) {
                 log.error("Error creating folder structure.");
                 return;
             }
