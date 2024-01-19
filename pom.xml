@@ -125,12 +125,9 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.12.1</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
                 <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar</descriptorRef>
-                    </descriptorRefs>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
@@ -138,10 +135,19 @@
                         </manifest>
                     </archive>
                     <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/main/resources/install.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
-                </executions>
-            </plugin>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>                                                                                                                                                                                           </plugin>
         </plugins>
         <resources>
             <resource>
