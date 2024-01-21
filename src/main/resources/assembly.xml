@@ -7,6 +7,13 @@
     </formats>
     <fileSets>
         <fileSet>
+            <directory>${project.basedir}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>README.md</include>
+            </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.basedir}/bin</directory>
             <outputDirectory>/</outputDirectory>
             <includes>

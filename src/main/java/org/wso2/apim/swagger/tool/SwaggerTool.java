@@ -27,6 +27,8 @@ import org.wso2.carbon.registry.resource.stub.ResourceAdminServiceExceptionExcep
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,6 +69,11 @@ public class SwaggerTool {
             trustStorePassword = jcommanderArgs.getTruststorepassword();
             doDownload = jcommanderArgs.getDoDownload();
 
+            if (trustStoreAbsolutePath == null) {
+                Path currentDirectoryPath = Paths.get(System.getProperty("user.dir"));
+                trustStoreAbsolutePath = currentDirectoryPath.getParent().toString() +
+                        Constants.TRUSTSTORE_DEFAULT_SUBPATH;
+            }
             // remove / at the end of the base url
             if (baseUrl.substring(baseUrl.length() -1).equals("/")) {
                 baseUrl = baseUrl.substring(0, baseUrl.length() - 1);

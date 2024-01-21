@@ -29,20 +29,22 @@ public class JcommanderArgs {
     @Parameter(names = {"--baseurl", "-b"}, description = "Base URL of the currently executing API Manager Instance")
     private String baseurl = "https://localhost:9443";
     @Parameter(names = {"--username", "-u"}, description = "Username to log into carbon console")
-    private String username = "admin";// TODO : Remove hardcoded values
+    private String username;
 
     @Parameter(names = {"--password", "-p"}, description = "Password to log into carbon console", password = true)
-    private String password = "admin";// TODO : Remove hardcoded values
+    private String password;
 
     @Parameter(names = {"--download", "-d"}, description = "Download Invalid and Malformed Swaggers")
     private boolean doDownload = false;
 
     @Parameter(names = {"--truststorepath", "-trustpath"}, description = "Absolute path to trust store")
-    private String truststorepath = // TODO : Remove hardcoded values
-            "/Users/rusirijayodaillesinghe/Documents/APIM_Repos/api-manager-3-2-x-swagger-tool/src/main/resources/security/client-truststore.jks";
+    private String truststorepath;
 
     @Parameter(names = {"--truststorepassword", "trustpass"}, description = "Trust store password", password = true)
-    private String truststorepassword = "wso2carbon"; // TODO : Remove hardcoded values
+    private String truststorepassword;
+
+    public JcommanderArgs() {
+    }
 
 
     protected String getBaseurl() {

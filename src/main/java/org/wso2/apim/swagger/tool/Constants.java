@@ -27,6 +27,7 @@ public class Constants {
             "The provided definition does not specify a valid version field.";
     public static final String TRUSTSTORE = "javax.net.ssl.trustStore";
     public static final String TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
+    public static final String TRUSTSTORE_DEFAULT_SUBPATH = "/repository/resources/security/client-truststore.jks";
 
     public enum SwaggerVersion {
         SWAGGER,
